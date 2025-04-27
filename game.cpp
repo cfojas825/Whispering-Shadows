@@ -74,13 +74,33 @@ void Game::startNewGame() {
 
     std::cout << "Enter your character's name: ";
     std::cin >> name;
+
+    clearScreen();
+    std::cout << "Welcome to Whispering Shadows, " << name << "!\n\n";
+    std::cout << "Controls:\n";
+    std::cout << "  - Move: W/A/S/D\n";
+    std::cout << "  - Open Inventory: I\n";
+    std::cout << "  - View Map: M\n";
+    std::cout << "  - Save Game: P\n";
+    std::cout << "  - Quit Game: Q\n\n";
+    std::cout << "In battle:\n";
+    std::cout << "  - 1: Attack\n";
+    std::cout << "  - 2: Use Skill\n";
+    std::cout << "  - 3: Use Item\n";
+    std::cout << "  - 4: Flee\n\n";
+    std::cout << "Survive, complete quests, and defeat the final horror!\n\n";
+    std::cout << "Press Enter to continue...";
+    std::cin.ignore();
+    std::cin.get();
+
+    clearScreen();
     std::cout << "Choose class: 1 Occultist  2 Hunter  3 Survivor > ";
     std::cin >> classChoice;
 
     std::cout << "\nChoose region:\n"
-        << "1. Ancient Catacombs (12×8)\n"
-        << "2. Derelict Asylum (15×12)\n"
-        << "3. Shadow Labyrinth (10×6)\n> ";
+        << "1. Ancient Catacombs (12Ã—8)\n"
+        << "2. Derelict Asylum (15Ã—12)\n"
+        << "3. Shadow Labyrinth (10Ã—6)\n> ";
     std::cin >> regionChoice;
 
     player = Player(name, static_cast<PlayerClass>(classChoice));
@@ -108,7 +128,6 @@ void Game::loadGame() {
 void Game::gameLoop() {
     const int requiredLevel = 5;
     while (player.isAlive() && isRunning) {
-        // boss sits at center
         int cx = world.getWidth() / 2;
         int cy = world.getHeight() / 2;
         if (player.getX() == cx && player.getY() == cy) {
@@ -150,7 +169,6 @@ void Game::handleEvent() {
     else if (cmd == 'Q') { isRunning = false;          return; }
     else { std::cout << "Invalid input.\n"; return; }
 
-    // detect edge-of-map
     int nx = player.getX() + dx;
     int ny = player.getY() + dy;
     int w = world.getWidth();
