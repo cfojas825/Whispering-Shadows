@@ -116,7 +116,7 @@ void Map::movePlayer(Player& player, int dx, int dy) {
     display(player);
 
     char tile = grid[ny][nx];
-    std::cout << "[DEBUG] Stepped on tile: '" << tile << "'\n";
+    std::cout << "Stepped on tile: '" << tile << "'\n";
 
     if (tile == 'I') {
         int drop = std::rand() % 2; // Random 50/50 chance
