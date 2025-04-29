@@ -41,7 +41,7 @@ public:
     int getXP() const;
     int getXPToNext() const;
     std::vector<Item>& getInventory();
-    int getMaxHealth() const;     // ?? NEW function
+    int getMaxHealth() const;     // 🔥 NEW function
 
     void takeDamage(int dmg);
     void heal(int amount);
@@ -63,6 +63,8 @@ public:
 
     void dropItem(const std::string& itemName);
     void equipItem(const std::string& itemName);
+    void addTempStrength(int amount);
+
 };
 
 #endif // PLAYER_H
