@@ -2,6 +2,8 @@
 #include "enemy.h"
 #include "item.h"
 #include "npc.h"
+#include "player.h"
+
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -72,12 +74,11 @@ void Map::display(const Player& player) const {
     std::cout << "\n--- Map ---\n";
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            // player
             if (x == player.getX() && y == player.getY()) {
                 std::cout << YELLOW << 'P' << RESET << ' ';
                 continue;
             }
-            // NPC
+
             bool drewNPC = false;
             for (size_t i = 0; i < npcPositions.size(); ++i) {
                 if (x == npcPositions[i].first && y == npcPositions[i].second) {
@@ -88,7 +89,6 @@ void Map::display(const Player& player) const {
             }
             if (drewNPC) continue;
 
-            // tile
             char t = grid[y][x];
             switch (t) {
             case 'B': std::cout << RED << 'B' << RESET << ' '; break;
@@ -116,11 +116,9 @@ void Map::movePlayer(Player& player, int dx, int dy) {
     display(player);
 
     char tile = grid[ny][nx];
-    std::cout << "Stepped on tile: '" << tile << "'\n";
 
     if (tile == 'I') {
-        int drop = std::rand() % 2; // Random 50/50 chance
-
+        int drop = std::rand() % 2;
         if (drop == 0) {
             Item potion("Bloody Bandage", "Restores 20 HP.", ItemType::POTION, 20);
             player.addItem(potion);
@@ -129,8 +127,7 @@ void Map::movePlayer(Player& player, int dx, int dy) {
             Item adrenaline("Adrenaline Shot", "Boosts strength by 10.", ItemType::ARTIFACT, 10);
             player.addItem(adrenaline);
         }
-
-        grid[ny][nx] = 'E'; // Remove the item tile after pickup
+        grid[ny][nx] = 'E';
     }
     else if (tile == 'M') {
         grid[ny][nx] = 'E';
@@ -155,7 +152,16 @@ void Map::movePlayer(Player& player, int dx, int dy) {
 void Map::encounter(Player& player) {
     int chance = std::rand() % 100;
     if (chance < 40) {
-        Enemy e("Wraith", 30, 5, 2);
+        // Randomized monster like M tile
+        int type = std::rand() % 4;
+        Enemy e = [&]() {
+            switch (type) {
+            case 0: return Enemy("Wraith", 30, 5, 2);
+            case 1: return Enemy("Faceless One", 40, 7, 3);
+            case 2: return Enemy("Crawling Horror", 25, 9, 1);
+            default: return Enemy("Whispering Shadow", 35, 6, 4);
+            }
+            }();
         e.fight(player);
     }
     else if (chance < 60) {
