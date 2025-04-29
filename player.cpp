@@ -154,7 +154,11 @@ void Player::equipItem(const std::string& n) {
     std::cout << n << " equipped (placeholder).\n";
 }
 
-// ?? NEW Getter function!
+// 🔥 NEW Getter function!
 int Player::getMaxHealth() const {
     return maxHealth;
+}
+void Player::addTempStrength(int amount) {
+    strength += amount;
+    std::cout << "You feel a surge of power! (+" << amount << " Strength)\n";
 }
