@@ -6,7 +6,7 @@
 #include <chrono>
 #include <vector>
 
-// Typewriter effect
+// Typewriter-style printer
 static void slowPrint(const std::string& text, int delayMs = 35) {
     for (char c : text) {
         std::cout << c << std::flush;
@@ -14,38 +14,80 @@ static void slowPrint(const std::string& text, int delayMs = 35) {
     }
 }
 
-// Pick random string
+// Random string picker
 static const std::string& pick(const std::vector<std::string>& list) {
     return list[std::rand() % list.size()];
 }
 
 // Constructor
 Enemy::Enemy(const std::string& name, int hp, int atk, int def)
-    : name(name), health(hp), attackPower(atk), defense(def) {
+    : name(name), health(hp), attackPower(atk), defense(def)
+{
 }
 
-// Combat
+// Combat sequence
 void Enemy::fight(Player& player) {
+    // === Monster Intro ===
+    std::vector<std::string> intros;
+    std::vector<std::string> quotes;
+
     if (name == "Wraith") {
-        std::vector<std::string> intros = {
+        intros = {
             "From the mist drifts a Wraith, its form barely human...\n",
             "A chill wind heralds the arrival of a Wraith...\n",
-            "You sense a presence�then the Wraith materializes!\n"
+            "You sense a presence—then the Wraith materializes!\n"
         };
-        std::vector<std::string> quotes = {
+        quotes = {
             "Wraith: \"Your soul tastes sweetest when you despair...\"\n\n",
             "Wraith: \"I will consume your hope, bone by bone...\"\n\n",
             "Wraith: \"There is no light for you here...\"\n\n"
         };
-        slowPrint(pick(intros));
-        slowPrint(pick(quotes));
+    }
+    else if (name == "Faceless One") {
+        intros = {
+            "A towering Faceless One looms, its visage blank...\n",
+            "You hear distant footsteps—then the Faceless One appears.\n",
+            "Shadows twist into the shape of a Faceless One...\n"
+        };
+        quotes = {
+            "Faceless One: \"I have taken more faces than you have lifetimes...\"\n\n",
+            "Faceless One: \"Your identity is mine to claim...\"\n\n",
+            "Faceless One: \"Can you survive without a name?\"\n\n"
+        };
+    }
+    else if (name == "Crawling Horror") {
+        intros = {
+            "Something slithers at your feet—a Crawling Horror emerges!\n",
+            "A sickening skittering—then the Crawling Horror crawls forth.\n",
+            "You smell rot—then a Crawling Horror bursts into view.\n"
+        };
+        quotes = {
+            "Crawling Horror: \"I will drag you into the abyss beneath these halls...\"\n\n",
+            "Crawling Horror: \"Your flesh will feed my hunger...\"\n\n",
+            "Crawling Horror: \"No corner is safe from my claws...\"\n\n"
+        };
+    }
+    else if (name == "Whispering Shadow") {
+        intros = {
+            "Shadows swirl and coalesce into a Whispering Shadow...\n",
+            "A soft voice beckons—you see the Whispering Shadow.\n",
+            "Darkness itself forms into the shape of a Whispering Shadow.\n"
+        };
+        quotes = {
+            "Whispering Shadow: \"Come closer... let me show you your darkest fear...\"\n\n",
+            "Whispering Shadow: \"Your mind is mine to unravel...\"\n\n",
+            "Whispering Shadow: \"Can you hear the voices behind you?\"\n\n"
+        };
     }
     else {
-        slowPrint("A strange entity reveals itself...\n\n");
+        intros = { "A strange entity reveals itself...\n" };
+        quotes = { "" };
     }
 
-    int tempStrengthBoost = 0; // ?? Added strength boost
+    slowPrint(pick(intros));
+    slowPrint(pick(quotes));
 
+    // === Battle Loop ===
     while (health > 0 && player.isAlive()) {
         std::cout << "\n" << name << " HP: " << health << "\n";
         std::cout << player.getName() << " - HP: " << player.getCurrentHealth() << "\n";
@@ -55,81 +97,110 @@ void Enemy::fight(Player& player) {
         std::cin >> choice;
 
         if (choice == 1) {
-            slowPrint("You strike swiftly!");
-            int baseDmg = std::rand() % 10 + 5;
-            int dmg = baseDmg + tempStrengthBoost;  // ?? Apply strength boost
+            std::vector<std::string> attacks = {
+                "You swing your blade in a wide arc...\n",
+                "You drive your sword forward...\n",
+                "You slash downward with brutal force...\n",
+                "You feint left, then strike fast...\n",
+                "You lunge forward with a crushing blow...\n"
+            };
+            slowPrint(pick(attacks));
+            int dmg = std::rand() % 10 + 5;
             std::cout << "You deal " << dmg << " damage!\n";
             health -= dmg;
         }
         else if (choice == 2) {
-            slowPrint("You unleash a special attack!");
-            int skillDmg = std::rand() % 15 + 10 + tempStrengthBoost; // ?? Boosted skill too
+            std::vector<std::string> skills = {
+                "You channel dark energy around your hands...\n",
+                "You summon forbidden power from beyond...\n",
+                "You unleash an arcane blast of fury...\n"
+            };
+            slowPrint(pick(skills));
+            int skillDmg = std::rand() % 15 + 10;
             std::cout << "Skill hits for " << skillDmg << " damage!\n";
             health -= skillDmg;
         }
         else if (choice == 3) {
-            std::cin.ignore();
-            const auto& inv = player.getInventory();
-            if (inv.empty()) {
-                std::cout << "Inventory is empty.\n";
-                continue;
-            }
+            std::cin.ignore();  // Clear newline
+            std::vector<std::string> uses = {
+                "You rummage through your pack...\n",
+                "You fumble for a potion...\n"
+            };
+            slowPrint(pick(uses));
+            player.showInventory();
+            std::cout << "Enter item number > ";
+            std::string input;
+            std::getline(std::cin, input);
+            int itemIndex = std::stoi(input) - 1;
 
-            std::cout << "Choose an item to use:\n";
-            for (size_t i = 0; i < inv.size(); ++i) {
-                std::cout << (i + 1) << ". " << inv[i].name << " (" << inv[i].description << ")\n";
-            }
-            std::cout << "> ";
-            int itemChoice;
-            std::cin >> itemChoice;
-
-            if (itemChoice >= 1 && itemChoice <= (int)inv.size()) {
-                const Item& selectedItem = inv[itemChoice - 1];
-
-                if (selectedItem.type == ItemType::POTION) {
-                    slowPrint("You use " + selectedItem.name + "...");
-                    player.heal(selectedItem.effectAmount);
-                    player.getInventory().erase(player.getInventory().begin() + (itemChoice - 1));
+            if (itemIndex >= 0 && itemIndex < player.getInventory().size()) {
+                auto& it = player.getInventory()[itemIndex];
+                if (it.type == ItemType::POTION) {
+                    slowPrint("You apply the " + it.name + "...\n");
+                    player.heal(it.effectAmount);
+                    player.getInventory().erase(player.getInventory().begin() + itemIndex);
                 }
-                else if (selectedItem.type == ItemType::ARTIFACT || selectedItem.type == ItemType::WEAPON) {
-                    slowPrint("You use " + selectedItem.name + "...");
-                    tempStrengthBoost += selectedItem.effectAmount; // ?? Boost attack
-                    std::cout << "You feel a surge of power! +" << selectedItem.effectAmount << " attack for this fight!\n";
-                    player.getInventory().erase(player.getInventory().begin() + (itemChoice - 1));
+                else if (it.name == "Adrenaline Shot") {
+                    slowPrint("You inject the Adrenaline Shot!\n");
+                    player.addTempStrength(it.effectAmount); // Make sure this method exists
+                    player.getInventory().erase(player.getInventory().begin() + itemIndex);
                 }
                 else {
                     std::cout << "That item can't be used now.\n";
                 }
             }
             else {
-                std::cout << "Invalid item choice.\n";
+                std::cout << "Invalid selection.\n";
             }
         }
         else if (choice == 4) {
-            slowPrint("You attempt to flee...");
+            std::vector<std::string> flees = {
+                "You try to escape...\n",
+                "You turn and run...\n",
+                "You dash into the darkness...\n"
+            };
+            slowPrint(pick(flees));
             if (std::rand() % 100 < 50) {
-                slowPrint("You escaped safely!");
+                slowPrint("You escape successfully!\n");
                 return;
             }
             else {
-                slowPrint("You failed to flee!");
+                slowPrint("You fail to flee!\n");
             }
         }
         else {
             std::cout << "Invalid choice.\n";
         }
 
+        // Monster's turn
         if (health > 0) {
-            slowPrint(name + " counterattacks!");
+            std::vector<std::string> counters = {
+                name + " lunges at you...\n",
+                name + " slashes through the dark...\n",
+                name + " lets out a roar and strikes...\n"
+            };
+            slowPrint(pick(counters));
             int dmg = std::max(1, attackPower - (std::rand() % 5));
             std::cout << name << " deals " << dmg << " damage!\n";
             player.takeDamage(dmg);
         }
     }
 
+    // === Defeat Sequence ===
     if (health <= 0) {
-        slowPrint(name + " collapses into nothingness...\n");
-        int xpEarned = 20 + std::rand() % 15;
+        std::vector<std::string> defeats = {
+            "With a final shriek, the " + name + " dissolves...\n",
+            "The " + name + " collapses into shadows...\n",
+            "The " + name + " vanishes with a scream...\n"
+        };
+        slowPrint(pick(defeats));
+        int xpEarned = 0;
+        if (name == "Wraith") xpEarned = 20;
+        else if (name == "Faceless One") xpEarned = 30;
+        else if (name == "Crawling Horror") xpEarned = 25;
+        else if (name == "Whispering Shadow") xpEarned = 35;
+        else xpEarned = 10;
+
         player.gainXP(xpEarned);
         std::cout << "You earned " << xpEarned << " XP!\n";
     }
