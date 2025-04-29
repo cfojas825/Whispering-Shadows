@@ -41,7 +41,7 @@ public:
     int getXP() const;
     int getXPToNext() const;
     std::vector<Item>& getInventory();
-    int getMaxHealth() const;     // 🔥 NEW function
+    int getMaxHealth() const;     
 
     void takeDamage(int dmg);
     void heal(int amount);
