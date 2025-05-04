@@ -20,4 +20,4 @@ public:
     int getY() const;
 };
 
-#endif
+#endif // NPC_H
