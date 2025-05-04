@@ -1,16 +1,16 @@
 #include "game.h"
+#include "enemy.h" 
+
 #include <iostream>
 #include <thread>
 #include <chrono>
 #include <cctype>
-#include <limits>
-#include "enemy.h"
 
 // ANSI colors
 static constexpr const char* RED = "\033[31m";
 static constexpr const char* RESET = "\033[0m";
 
-// clear screen helper
+// Clear screen
 static void clearScreen() {
 #ifdef _WIN32
     system("CLS");
@@ -19,7 +19,7 @@ static void clearScreen() {
 #endif
 }
 
-// typewriter effect
+// Typewriter text
 static void slowPrint(const std::string& text, int delayMs = 35) {
     for (char c : text) {
         std::cout << c << std::flush;
@@ -28,7 +28,7 @@ static void slowPrint(const std::string& text, int delayMs = 35) {
     std::cout << "\n";
 }
 
-// heartbeat effect
+// Heartbeat effect
 static void heartbeat(int beats = 3, int delayMs = 300) {
     for (int i = 0; i < beats; ++i) {
         std::cout << RED << "<3" << RESET << std::flush;
@@ -60,18 +60,13 @@ void Game::mainMenu() {
               << "1. New Game\n"
               << "2. Load Game\n"
               << "3. Quit\n> ";
-    if (!(std::cin >> choice)) {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Invalid input.\n";
-        return;
-    }
+    std::cin >> choice;
 
     switch (choice) {
-    case 1: startNewGame(); break;
-    case 2: loadGame();     break;
-    case 3: isRunning = false; return;
-    default: std::cout << RED << "Invalid option." << RESET << "\n";
+        case 1: startNewGame(); break;
+        case 2: loadGame();     break;
+        case 3: isRunning = false; return;
+        default: std::cout << RED << "Invalid option." << RESET << "\n";
     }
 }
 
@@ -84,19 +79,19 @@ void Game::startNewGame() {
 
     clearScreen();
     std::cout << "Welcome to Whispering Shadows, " << name << "!\n\n";
-    std::cout << "Controls:\n"
-              << "  - Move: W/A/S/D\n"
-              << "  - Open Inventory: I\n"
-              << "  - View Map: M\n"
-              << "  - Save Game: P\n"
-              << "  - Quit Game: Q\n\n"
-              << "In battle:\n"
-              << "  - 1: Attack\n"
-              << "  - 2: Use Skill\n"
-              << "  - 3: Use Item\n"
-              << "  - 4: Flee\n\n"
-              << "Survive, complete quests, and defeat the final horror!\n\n"
-              << "Press Enter to continue...";
+    std::cout << "Controls:\n";
+    std::cout << "  - Move: W/A/S/D\n";
+    std::cout << "  - Open Inventory: I\n";
+    std::cout << "  - View Map: M\n";
+    std::cout << "  - Save Game: P\n";
+    std::cout << "  - Quit Game: Q\n\n";
+    std::cout << "In battle:\n";
+    std::cout << "  - 1: Attack\n";
+    std::cout << "  - 2: Use Skill\n";
+    std::cout << "  - 3: Use Item\n";
+    std::cout << "  - 4: Flee\n\n";
+    std::cout << "Survive, complete quests, and defeat the final horror!\n\n";
+    std::cout << "Press Enter to continue...";
     std::cin.ignore();
     std::cin.get();
 
@@ -110,16 +105,14 @@ void Game::startNewGame() {
               << "3. Shadow Labyrinth (10×6)\n> ";
     std::cin >> regionChoice;
 
-    player = Player(name, static_cast<PlayerClass>(classChoice));
+    player = Player(name, static_cast<PlayerClass>(classChoice - 1));
     if (regionChoice >= 1 && regionChoice <= static_cast<int>(regions.size())) {
         int w = regions[regionChoice - 1].first;
         int h = regions[regionChoice - 1].second;
         world = Map(w, h);
         regionIndex = regionChoice - 1;
     } else {
-        int w = regions[0].first;
-        int h = regions[0].second;
-        world = Map(w, h);
+        world = Map(regions[0].first, regions[0].second);
         regionIndex = 0;
     }
 
@@ -132,11 +125,18 @@ void Game::loadGame() {
     gameLoop();
 }
 
+void Game::saveGame() {
+    player.save("savefile.txt");
+    world.save("mapfile.txt");
+    std::cout << RED << "Game saved.\n" << RESET;
+}
+
 void Game::gameLoop() {
     const int requiredLevel = 5;
     while (player.isAlive() && isRunning) {
         int cx = world.getWidth() / 2;
         int cy = world.getHeight() / 2;
+
         if (player.getX() == cx && player.getY() == cy) {
             if (player.getLevel() < requiredLevel) {
                 std::cout << RED
@@ -145,17 +145,23 @@ void Game::gameLoop() {
                 player.setPosition(cx, cy - 1);
                 continue;
             }
-            int hp = 200 + player.getLevel() * 30;
-            int atk = 15 + player.getLevel() * 3;
-            Enemy boss("Eldritch Horror", hp, atk, player.getLevel());
-            std::cout << RED; slowPrint("You enter the final chamber..."); std::cout << RESET;
+
+            int level = player.getLevel();
+            int hp = 200 + static_cast<int>(level * 30);  // ✅ cast to avoid overflow warning
+            int atk = 15 + static_cast<int>(level * 3);   // ✅ same here
+            Enemy boss("Eldritch Horror", hp, atk, level);
+            std::cout << RED;
+            slowPrint("You enter the final chamber...");
+            std::cout << RESET;
             boss.fight(player);
             std::cout << (player.isAlive() ? "\nYOU WIN!\n" : "\nGAME OVER\n");
             isRunning = false;
             return;
         }
+
         handleEvent();
     }
+
     if (!player.isAlive())
         std::cout << RED << "You have perished...\n" << RESET;
 }
@@ -175,7 +181,10 @@ void Game::handleEvent() {
     else if (cmd == 'M') { world.display(player); return; }
     else if (cmd == 'P') { saveGame(); return; }
     else if (cmd == 'Q') { isRunning = false; return; }
-    else { std::cout << "Invalid input.\n"; return; }
+    else {
+        std::cout << "Invalid input.\n";
+        return;
+    }
 
     int nx = player.getX() + dx;
     int ny = player.getY() + dy;
@@ -196,13 +205,6 @@ void Game::handleEvent() {
     }
 }
 
-void Game::saveGame() {
-    player.save("savefile.txt");
-    world.save("mapfile.txt");
-    std::cout << RED << "Game saved." << RESET << "\n";
-}
-
 void Game::run() {
-    while (isRunning)
-        mainMenu();
+    while (isRunning) mainMenu();
 }
