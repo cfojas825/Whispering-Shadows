@@ -13,14 +13,13 @@ private:
     std::vector<std::pair<int, int>> npcPositions;
     std::vector<NPC> npcs;
 
-    // Fill grid: W=water, M=monster spawn, I=item, T=tree, X=wall, E=empty, B=boss
     void initRandomTerrain();
 
 public:
-    Map();                // default 12×8 map
-    Map(int w, int h);    // custom dimensions
+    Map();                // default 12Ã—8 map
+    Map(int w, int h);    // custom size map
 
-    int getWidth()  const;
+    int getWidth() const;
     int getHeight() const;
 
     void display(const Player& player) const;
