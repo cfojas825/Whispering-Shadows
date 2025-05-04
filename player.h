@@ -15,7 +15,7 @@ private:
     int currentHealth;
     int maxSanity;
     int currentSanity;
-    int baseStrength; // New
+    int baseStrength;  
     int strength;
     int defense;
     int perception;
@@ -65,8 +65,7 @@ public:
     void dropItem(const std::string& itemName);
     void equipItem(const std::string& itemName);
     void addTempStrength(int amount);
-    void resetStrength(); // New
-
+    void resetStrength();
 };
 
 #endif // PLAYER_H
