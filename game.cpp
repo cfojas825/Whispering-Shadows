@@ -147,8 +147,8 @@ void Game::gameLoop() {
             }
 
             int level = player.getLevel();
-            int hp = 200 + static_cast<int>(level * 30);  // ✅ cast to avoid overflow warning
-            int atk = 15 + static_cast<int>(level * 3);   // ✅ same here
+            int hp = 200 + static_cast<int>(level * 30); 
+            int atk = 15 + static_cast<int>(level * 3);  
             Enemy boss("Eldritch Horror", hp, atk, level);
             std::cout << RED;
             slowPrint("You enter the final chamber...");
