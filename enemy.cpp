@@ -1,13 +1,12 @@
 #include "enemy.h"
 #include <iostream>
 #include <cstdlib>
-#include <algorithm>
+#include <vector>
 #include <thread>
 #include <chrono>
-#include <vector>
 #include <limits>
 
-// Typewriter-style printer
+// Typewriter effect
 static void slowPrint(const std::string& text, int delayMs = 35) {
     for (char c : text) {
         std::cout << c << std::flush;
@@ -22,11 +21,9 @@ static const std::string& pick(const std::vector<std::string>& list) {
 
 // Constructor
 Enemy::Enemy(const std::string& name, int hp, int atk, int def)
-    : name(name), health(hp), attackPower(atk), defense(def)
-{
-}
+    : name(name), health(hp), attackPower(atk), defense(def) {}
 
-// Combat sequence
+// Combat
 void Enemy::fight(Player& player) {
     std::vector<std::string> intros;
     std::vector<std::string> quotes;
@@ -83,6 +80,7 @@ void Enemy::fight(Player& player) {
     slowPrint(pick(intros));
     slowPrint(pick(quotes));
 
+    // Battle Loop
     while (health > 0 && player.isAlive()) {
         std::cout << "\n" << name << " HP: " << health << "\n";
         std::cout << player.getName() << " - HP: " << player.getCurrentHealth() << "\n";
@@ -97,34 +95,33 @@ void Enemy::fight(Player& player) {
         }
 
         if (choice == 1) {
-            std::vector<std::string> attacks = {
+            slowPrint(pick({
                 "You swing your blade in a wide arc...\n",
                 "You drive your sword forward...\n",
                 "You slash downward with brutal force...\n",
                 "You feint left, then strike fast...\n",
                 "You lunge forward with a crushing blow...\n"
-            };
-            slowPrint(pick(attacks));
+            }));
             int dmg = std::rand() % 10 + 5;
+            dmg = std::max(0, dmg - (defense / 2));
             std::cout << "You deal " << dmg << " damage!\n";
             health -= dmg;
         } else if (choice == 2) {
-            std::vector<std::string> skills = {
+            slowPrint(pick({
                 "You channel dark energy around your hands...\n",
                 "You summon forbidden power from beyond...\n",
                 "You unleash an arcane blast of fury...\n"
-            };
-            slowPrint(pick(skills));
+            }));
             int skillDmg = std::rand() % 15 + 10;
+            skillDmg = std::max(0, skillDmg - (defense / 3));
             std::cout << "Skill hits for " << skillDmg << " damage!\n";
             health -= skillDmg;
         } else if (choice == 3) {
             std::cin.ignore();
-            std::vector<std::string> uses = {
+            slowPrint(pick({
                 "You rummage through your pack...\n",
                 "You fumble for a potion...\n"
-            };
-            slowPrint(pick(uses));
+            }));
             player.showInventory();
             std::cout << "Enter item number > ";
             std::string input;
@@ -148,15 +145,14 @@ void Enemy::fight(Player& player) {
                 std::cout << "Invalid selection.\n";
             }
         } else if (choice == 4) {
-            std::vector<std::string> flees = {
+            slowPrint(pick({
                 "You try to escape...\n",
                 "You turn and run...\n",
                 "You dash into the darkness...\n"
-            };
-            slowPrint(pick(flees));
+            }));
             if (std::rand() % 100 < 50) {
                 slowPrint("You escape successfully!\n");
-                player.resetStrength(); // Reset any temporary buffs
+                player.resetStrength(); // Temporary buffs removed
                 return;
             } else {
                 slowPrint("You fail to flee!\n");
@@ -165,29 +161,29 @@ void Enemy::fight(Player& player) {
             std::cout << "Invalid choice.\n";
         }
 
+        // Enemy counterattack
         if (health > 0) {
-            std::vector<std::string> counters = {
+            slowPrint(pick({
                 name + " lunges at you...\n",
                 name + " slashes through the dark...\n",
                 name + " lets out a roar and strikes...\n"
-            };
-            slowPrint(pick(counters));
+            }));
             int dmg = std::max(1, attackPower - (std::rand() % 5));
             std::cout << name << " deals " << dmg << " damage!\n";
             player.takeDamage(dmg);
         }
     }
 
-    player.resetStrength(); // Reset buffs after battle
+    // Reset strength buff
+    player.resetStrength();
 
+    // Death result
     if (health <= 0) {
-        std::vector<std::string> defeats = {
+        slowPrint(pick({
             "With a final shriek, the " + name + " dissolves...\n",
             "The " + name + " collapses into shadows...\n",
             "The " + name + " vanishes with a scream...\n"
-        };
-        slowPrint(pick(defeats));
-
+        }));
         int xpEarned = 0;
         if (name == "Wraith") xpEarned = 20;
         else if (name == "Faceless One") xpEarned = 30;
