@@ -1,4 +1,3 @@
-// ===== NPC.cpp =====
 #include "npc.h"
 #include <iostream>
 #include <limits>
@@ -32,20 +31,16 @@ void NPC::interact(Player& player) {
         if (choice == 1) {
             questAccepted = true;
             std::cout << name << ": Good luck... You’ll need it.\n";
-        }
-        else {
+        } else {
             std::cout << name << ": Maybe next time.\n";
         }
-    }
-    else if (!questCompleted && player.getMonstersKilled() >= 1) {
+    } else if (!questCompleted && player.getMonstersKilled() >= 1) {
         questCompleted = true;
         std::cout << name << ": You have done well. Here is your reward.\n";
         player.gainXP(rewardXP);
-    }
-    else if (!questCompleted) {
+    } else if (!questCompleted) {
         std::cout << name << ": Return once you have slain 1 monster.\n";
-    }
-    else {
+    } else {
         std::cout << name << ": Thank you again for your help.\n";
     }
 }
