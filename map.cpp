@@ -30,26 +30,24 @@ static void clearScreen() {
 }
 
 void Map::initRandomTerrain() {
-    std::srand((unsigned)std::time(nullptr));
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
     grid.assign(height, std::vector<char>(width, 'E'));
 
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             int r = std::rand() % 100;
-            if (r < 8) grid[y][x] = 'W'; // water
-            else if (r < 20) grid[y][x] = 'M'; // monster spawn
-            else if (r < 30) grid[y][x] = 'I'; // item
-            else if (r < 42) grid[y][x] = 'T'; // tree
-            else if (r < 48) grid[y][x] = 'X'; // wall
-            else grid[y][x] = 'E'; // empty
+            if (r < 8) grid[y][x] = 'W';        // water
+            else if (r < 20) grid[y][x] = 'M';   // monster
+            else if (r < 30) grid[y][x] = 'I';   // item
+            else if (r < 42) grid[y][x] = 'T';   // tree
+            else if (r < 48) grid[y][x] = 'X';   // wall
+            else grid[y][x] = 'E';               // empty
         }
     }
 
-    // Boss at center
     int bx = width / 2, by = height / 2;
     grid[by][bx] = 'B';
 
-    // Place NPCs
     npcs.clear();
     npcPositions.clear();
     npcs.emplace_back("Old Hermit", 2, 2, "Slay a Wraith haunting the village.", 50);
@@ -91,13 +89,13 @@ void Map::display(const Player& player) const {
 
             char t = grid[y][x];
             switch (t) {
-            case 'B': std::cout << RED << 'B' << RESET << ' '; break;
-            case 'M': std::cout << MAGENTA << 'M' << RESET << ' '; break;
-            case 'I': std::cout << BLUE << 'I' << RESET << ' '; break;
-            case 'W': std::cout << BLUE << '~' << RESET << ' '; break;
-            case 'T': std::cout << GREEN << '^' << RESET << ' '; break;
-            case 'X': std::cout << WHITE << '#' << RESET << ' '; break;
-            default:  std::cout << GRAY << '.' << RESET << ' '; break;
+                case 'B': std::cout << RED << 'B' << RESET << ' '; break;
+                case 'M': std::cout << MAGENTA << 'M' << RESET << ' '; break;
+                case 'I': std::cout << BLUE << 'I' << RESET << ' '; break;
+                case 'W': std::cout << BLUE << '~' << RESET << ' '; break;
+                case 'T': std::cout << GREEN << '^' << RESET << ' '; break;
+                case 'X': std::cout << WHITE << '#' << RESET << ' '; break;
+                default:  std::cout << GRAY << '.' << RESET << ' '; break;
             }
         }
         std::cout << "\n";
@@ -122,27 +120,24 @@ void Map::movePlayer(Player& player, int dx, int dy) {
         if (drop == 0) {
             Item potion("Bloody Bandage", "Restores 20 HP.", ItemType::POTION, 20);
             player.addItem(potion);
-        }
-        else {
+        } else {
             Item adrenaline("Adrenaline Shot", "Boosts strength by 10.", ItemType::ARTIFACT, 10);
             player.addItem(adrenaline);
         }
         grid[ny][nx] = 'E';
-    }
-    else if (tile == 'M') {
+    } else if (tile == 'M') {
         grid[ny][nx] = 'E';
         int type = std::rand() % 4;
         Enemy e = [&]() {
             switch (type) {
-            case 0: return Enemy("Wraith", 30, 5, 2);
-            case 1: return Enemy("Faceless One", 40, 7, 3);
-            case 2: return Enemy("Crawling Horror", 25, 9, 1);
-            default: return Enemy("Whispering Shadow", 35, 6, 4);
+                case 0: return Enemy("Wraith", 30, 5, 2);
+                case 1: return Enemy("Faceless One", 40, 7, 3);
+                case 2: return Enemy("Crawling Horror", 25, 9, 1);
+                default: return Enemy("Whispering Shadow", 35, 6, 4);
             }
-            }();
+        }();
         e.fight(player);
-    }
-    else {
+    } else {
         encounter(player);
     }
 
@@ -152,22 +147,19 @@ void Map::movePlayer(Player& player, int dx, int dy) {
 void Map::encounter(Player& player) {
     int chance = std::rand() % 100;
     if (chance < 40) {
-        // Randomized monster like M tile
         int type = std::rand() % 4;
         Enemy e = [&]() {
             switch (type) {
-            case 0: return Enemy("Wraith", 30, 5, 2);
-            case 1: return Enemy("Faceless One", 40, 7, 3);
-            case 2: return Enemy("Crawling Horror", 25, 9, 1);
-            default: return Enemy("Whispering Shadow", 35, 6, 4);
+                case 0: return Enemy("Wraith", 30, 5, 2);
+                case 1: return Enemy("Faceless One", 40, 7, 3);
+                case 2: return Enemy("Crawling Horror", 25, 9, 1);
+                default: return Enemy("Whispering Shadow", 35, 6, 4);
             }
-            }();
+        }();
         e.fight(player);
-    }
-    else if (chance < 60) {
+    } else if (chance < 60) {
         player.addItem(Item("Bloody Bandage", "Restores 20 HP.", ItemType::POTION, 20));
-    }
-    else {
+    } else {
         std::cout << "It's eerily quiet...\n";
     }
 }
@@ -182,9 +174,10 @@ void Map::checkNPCInteraction(Player& player) {
 
 void Map::save(const std::string& filename) const {
     std::ofstream out(filename);
-    for (auto& r : grid) {
-        for (char c : r) out << c;
-        out << "\n";
+    for (const auto& row : grid) {
+        for (char c : row)
+            out << c;
+        out << '\n';
     }
 }
 
