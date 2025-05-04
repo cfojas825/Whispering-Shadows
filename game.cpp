@@ -2,6 +2,8 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <cctype>
+#include <limits>
 #include "enemy.h"
 
 // ANSI colors
@@ -55,10 +57,15 @@ void Game::mainMenu() {
     std::this_thread::sleep_for(std::chrono::milliseconds(700));
 
     std::cout << RED << "\n=== Whispering Shadows ===\n" << RESET
-        << "1. New Game\n"
-        << "2. Load Game\n"
-        << "3. Quit\n> ";
-    std::cin >> choice;
+              << "1. New Game\n"
+              << "2. Load Game\n"
+              << "3. Quit\n> ";
+    if (!(std::cin >> choice)) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input.\n";
+        return;
+    }
 
     switch (choice) {
     case 1: startNewGame(); break;
@@ -77,19 +84,19 @@ void Game::startNewGame() {
 
     clearScreen();
     std::cout << "Welcome to Whispering Shadows, " << name << "!\n\n";
-    std::cout << "Controls:\n";
-    std::cout << "  - Move: W/A/S/D\n";
-    std::cout << "  - Open Inventory: I\n";
-    std::cout << "  - View Map: M\n";
-    std::cout << "  - Save Game: P\n";
-    std::cout << "  - Quit Game: Q\n\n";
-    std::cout << "In battle:\n";
-    std::cout << "  - 1: Attack\n";
-    std::cout << "  - 2: Use Skill\n";
-    std::cout << "  - 3: Use Item\n";
-    std::cout << "  - 4: Flee\n\n";
-    std::cout << "Survive, complete quests, and defeat the final horror!\n\n";
-    std::cout << "Press Enter to continue...";
+    std::cout << "Controls:\n"
+              << "  - Move: W/A/S/D\n"
+              << "  - Open Inventory: I\n"
+              << "  - View Map: M\n"
+              << "  - Save Game: P\n"
+              << "  - Quit Game: Q\n\n"
+              << "In battle:\n"
+              << "  - 1: Attack\n"
+              << "  - 2: Use Skill\n"
+              << "  - 3: Use Item\n"
+              << "  - 4: Flee\n\n"
+              << "Survive, complete quests, and defeat the final horror!\n\n"
+              << "Press Enter to continue...";
     std::cin.ignore();
     std::cin.get();
 
@@ -98,24 +105,24 @@ void Game::startNewGame() {
     std::cin >> classChoice;
 
     std::cout << "\nChoose region:\n"
-        << "1. Ancient Catacombs (12×8)\n"
-        << "2. Derelict Asylum (15×12)\n"
-        << "3. Shadow Labyrinth (10×6)\n> ";
+              << "1. Ancient Catacombs (12×8)\n"
+              << "2. Derelict Asylum (15×12)\n"
+              << "3. Shadow Labyrinth (10×6)\n> ";
     std::cin >> regionChoice;
 
     player = Player(name, static_cast<PlayerClass>(classChoice));
-    if (regionChoice >= 1 && regionChoice <= (int)regions.size()) {
+    if (regionChoice >= 1 && regionChoice <= static_cast<int>(regions.size())) {
         int w = regions[regionChoice - 1].first;
         int h = regions[regionChoice - 1].second;
         world = Map(w, h);
         regionIndex = regionChoice - 1;
-    }
-    else {
+    } else {
         int w = regions[0].first;
         int h = regions[0].second;
         world = Map(w, h);
         regionIndex = 0;
     }
+
     gameLoop();
 }
 
@@ -133,8 +140,8 @@ void Game::gameLoop() {
         if (player.getX() == cx && player.getY() == cy) {
             if (player.getLevel() < requiredLevel) {
                 std::cout << RED
-                    << "A sealed door bars your path -- reach level "
-                    << requiredLevel << " first.\n" << RESET;
+                          << "A sealed door bars your path -- reach level "
+                          << requiredLevel << " first.\n" << RESET;
                 player.setPosition(cx, cy - 1);
                 continue;
             }
@@ -156,7 +163,8 @@ void Game::gameLoop() {
 void Game::handleEvent() {
     char cmd;
     std::cout << RED << "\nMove (W/S/D/A), I=Inv, M=Map, P=Save, Q=Quit > " << RESET;
-    std::cin >> cmd; cmd = std::toupper(cmd);
+    std::cin >> cmd;
+    cmd = std::toupper(cmd);
 
     int dx = 0, dy = 0;
     if (cmd == 'W') dy = -1;
@@ -164,15 +172,16 @@ void Game::handleEvent() {
     else if (cmd == 'A') dx = -1;
     else if (cmd == 'D') dx = 1;
     else if (cmd == 'I') { player.showInventory(); return; }
-    else if (cmd == 'M') { world.display(player);     return; }
-    else if (cmd == 'P') { saveGame();               return; }
-    else if (cmd == 'Q') { isRunning = false;          return; }
+    else if (cmd == 'M') { world.display(player); return; }
+    else if (cmd == 'P') { saveGame(); return; }
+    else if (cmd == 'Q') { isRunning = false; return; }
     else { std::cout << "Invalid input.\n"; return; }
 
     int nx = player.getX() + dx;
     int ny = player.getY() + dy;
     int w = world.getWidth();
     int h = world.getHeight();
+
     if (nx < 0 || nx >= w || ny < 0 || ny >= h) {
         regionIndex = (regionIndex + 1) % regions.size();
         int rw = regions[regionIndex].first;
@@ -182,8 +191,7 @@ void Game::handleEvent() {
         int py = (ny < 0 ? rh - 1 : (ny >= h ? 0 : ny));
         player.setPosition(px, py);
         world.display(player);
-    }
-    else {
+    } else {
         world.movePlayer(player, dx, dy);
     }
 }
@@ -195,5 +203,6 @@ void Game::saveGame() {
 }
 
 void Game::run() {
-    while (isRunning) mainMenu();
+    while (isRunning)
+        mainMenu();
 }
