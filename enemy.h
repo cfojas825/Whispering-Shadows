@@ -12,9 +12,8 @@ private:
     int defense;
 
 public:
-    // Note: signature must match exactly what you implement in enemy.cpp
     Enemy(const std::string& name, int hp, int atk, int def);
     void fight(Player& player);
 };
 
-#endif
+#endif // ENEMY_H
