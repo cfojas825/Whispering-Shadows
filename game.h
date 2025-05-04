@@ -15,9 +15,9 @@ private:
 
     int regionIndex = 0;
     std::vector<std::pair<int, int>> regions = {
-        {12, 8},    // Ancient Catacombs
-        {15, 12},   // Derelict Asylum
-        {10, 6}     // Shadow Labyrinth
+        {12, 8},   // Ancient Catacombs
+        {15, 12},  // Derelict Asylum
+        {10, 6}    // Shadow Labyrinth
     };
 
     void mainMenu();
