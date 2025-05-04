@@ -6,7 +6,7 @@
 // Base XP to level 2
 static constexpr int BASE_XP = 100;
 
-// ANSI colors for inventory
+// ANSI colors for inventory display
 static constexpr const char* WHITE = "\033[37m";
 static constexpr const char* BLUE = "\033[34m";
 static constexpr const char* MAGENTA = "\033[35m";
@@ -20,8 +20,7 @@ Player::Player()
       baseStrength(10), strength(10), defense(10),
       perception(10), willpower(10),
       posX(0), posY(0), monstersKilled(0)
-{
-}
+{}
 
 Player::Player(std::string n, PlayerClass c)
     : name(n), characterClass(c),
@@ -29,26 +28,27 @@ Player::Player(std::string n, PlayerClass c)
       posX(0), posY(0), monstersKilled(0)
 {
     switch (c) {
-    case PlayerClass::OCCULTIST:
-        maxHealth = 60;
-        baseStrength = strength = 8;
-        defense = 8;
-        perception = 15;
-        willpower = 20;
-        break;
-    case PlayerClass::HUNTER:
-        maxHealth = 100;
-        baseStrength = strength = 15;
-        defense = 12;
-        perception = 10;
-        willpower = 10;
-        break;
-    default:
-        maxHealth = 80;
-        baseStrength = strength = 10;
-        defense = 10;
-        perception = 12;
-        willpower = 15;
+        case PlayerClass::OCCULTIST:
+            maxHealth = 60;
+            baseStrength = strength = 8;
+            defense = 8;
+            perception = 15;
+            willpower = 20;
+            break;
+        case PlayerClass::HUNTER:
+            maxHealth = 100;
+            baseStrength = strength = 15;
+            defense = 12;
+            perception = 10;
+            willpower = 10;
+            break;
+        default: // SURVIVOR
+            maxHealth = 80;
+            baseStrength = strength = 10;
+            defense = 10;
+            perception = 12;
+            willpower = 15;
+            break;
     }
     currentHealth = maxHealth;
     currentSanity = maxSanity = 100;
@@ -61,6 +61,7 @@ void Player::checkLevelUp() {
         xpToNextLevel = static_cast<int>(xpToNextLevel * 1.5f);
         maxHealth += 5;
         strength += 1;
+        baseStrength += 1;  // Ensure baseStrength scales
         defense += 1;
         currentHealth = maxHealth;
         std::cout << "\n*** LEVEL UP! Level " << level << " ***\n";
@@ -123,11 +124,16 @@ void Player::heal(int amount) {
     std::cout << "You healed " << amount << " HP.\n";
 }
 
-bool Player::isAlive() const { return currentHealth > 0; }
+bool Player::isAlive() const {
+    return currentHealth > 0;
+}
 
 int Player::getX() const { return posX; }
 int Player::getY() const { return posY; }
-void Player::setPosition(int x, int y) { posX = x; posY = y; }
+void Player::setPosition(int x, int y) {
+    posX = x;
+    posY = y;
+}
 
 int Player::getMonstersKilled() const { return monstersKilled; }
 void Player::addMonsterKill() { monstersKilled++; }
@@ -135,24 +141,6 @@ void Player::addMonsterKill() { monstersKilled++; }
 void Player::addItem(const Item& item) {
     inventory.push_back(item);
     std::cout << "Got " << item.name << "!\n";
-}
-
-void Player::save(const std::string& fn) const {
-    std::ofstream out(fn);
-    out << name << "\n" << static_cast<int>(characterClass) << "\n"
-        << maxHealth << " " << currentHealth << "\n"
-        << experience << " " << xpToNextLevel << " " << level << "\n"
-        << posX << " " << posY << "\n";
-}
-
-void Player::load(const std::string& fn) {
-    std::ifstream in(fn);
-    int ci;
-    in >> name >> ci
-       >> maxHealth >> currentHealth
-       >> experience >> xpToNextLevel >> level
-       >> posX >> posY;
-    characterClass = static_cast<PlayerClass>(ci);
 }
 
 void Player::dropItem(const std::string& n) {
@@ -177,4 +165,51 @@ void Player::addTempStrength(int amount) {
 
 void Player::resetStrength() {
     strength = baseStrength;
+}
+
+void Player::save(const std::string& fn) const {
+    std::ofstream out(fn);
+    out << name << "\n" << static_cast<int>(characterClass) << "\n"
+        << maxHealth << " " << currentHealth << "\n"
+        << baseStrength << " " << strength << " " << defense << "\n"
+        << experience << " " << xpToNextLevel << " " << level << "\n"
+        << posX << " " << posY << "\n"
+        << monstersKilled << "\n";
+
+    out << inventory.size() << "\n";
+    for (const auto& item : inventory) {
+        out << item.name << "\n"
+            << item.description << "\n"
+            << static_cast<int>(item.type) << " "
+            << item.effectAmount << " "
+            << item.value << " "
+            << static_cast<int>(item.rarity) << "\n";
+    }
+}
+
+void Player::load(const std::string& fn) {
+    std::ifstream in(fn);
+    int ci;
+    size_t invSize;
+    in >> name >> ci
+       >> maxHealth >> currentHealth
+       >> baseStrength >> strength >> defense
+       >> experience >> xpToNextLevel >> level
+       >> posX >> posY
+       >> monstersKilled;
+    characterClass = static_cast<PlayerClass>(ci);
+
+    in >> invSize;
+    inventory.clear();
+    for (size_t i = 0; i < invSize; ++i) {
+        std::string name, desc;
+        int type, amount, value, rarity;
+        in.ignore();
+        std::getline(in, name);
+        std::getline(in, desc);
+        in >> type >> amount >> value >> rarity;
+        inventory.emplace_back(name, desc, static_cast<ItemType>(type), amount, value, static_cast<Rarity>(rarity));
+    }
+
+    currentSanity = maxSanity = 100;
 }
