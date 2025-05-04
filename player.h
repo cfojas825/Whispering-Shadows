@@ -11,20 +11,25 @@ class Player {
 private:
     std::string name;
     PlayerClass characterClass;
+
     int maxHealth;
     int currentHealth;
     int maxSanity;
     int currentSanity;
+
     int baseStrength;  
     int strength;
     int defense;
     int perception;
     int willpower;
+
     int experience;
     int xpToNextLevel;
     int level;
+
     int posX, posY;
     int monstersKilled;
+
     std::vector<Item> inventory;
 
     void checkLevelUp();
@@ -49,8 +54,10 @@ public:
     void showStats() const;
     void showInventory() const;
     void addItem(const Item& item);
-    void gainXP(int xp);
+    void dropItem(const std::string& itemName);
+    void equipItem(const std::string& itemName);
 
+    void gainXP(int xp);
     int getMonstersKilled() const;
     void addMonsterKill();
 
@@ -59,13 +66,11 @@ public:
     void setPosition(int x, int y);
     bool isAlive() const;
 
+    void addTempStrength(int amount);
+    void resetStrength(); // Resets to baseStrength
+
     void save(const std::string& filename) const;
     void load(const std::string& filename);
-
-    void dropItem(const std::string& itemName);
-    void equipItem(const std::string& itemName);
-    void addTempStrength(int amount);
-    void resetStrength();
 };
 
 #endif // PLAYER_H
