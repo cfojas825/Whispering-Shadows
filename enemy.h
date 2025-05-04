@@ -9,7 +9,7 @@ private:
     std::string name;
     int health;
     int attackPower;
-    int defense;
+    int defense; 
 
 public:
     Enemy(const std::string& name, int hp, int atk, int def);
